@@ -24,6 +24,9 @@ gem 'jbuilder', '~> 2.0'
 gem 'sdoc', '~> 0.4.0', group: :doc
 
 gem 'kaminari'
+gem 'slim'
+gem 'slim-rails'
+gem 'protozaur', path: './X_GEMS/protozaur'
 
 # Use ActiveModel has_secure_password
 # gem 'bcrypt', '~> 3.1.7'

@@ -1,0 +1,29 @@
+.fs30.lh120.mb30 Products
+
+.ffa.fs12.mb20= paginate products
+
+- products.each do |product|
+  .mb30.clearfix
+    .pull-left.mr30
+      .fs18.mb10.b Product
+
+      .ptz--btn
+        b= product.id
+        '
+        span= product.title
+        '
+        span= product.price
+        '
+        span.b= product.product_params_set_type
+
+    .pull-left
+      .fs18.mb10.b Categories
+
+      - if product.product_categories.present?
+        - product.product_categories.each do |pc|
+          = link_to pc, class: 'ptz--btn'
+            = pc.id
+          '
+      - else
+        = link_to 'No category', '#', class: 'ptz--btn'
+

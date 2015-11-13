@@ -6,12 +6,53 @@ class Product < ActiveRecord::Base
   include ::RailsShop::ProductBrandsScopes
   include ::RailsShop::ProductPriceScopes
 
-  scope :in_stock, ->{
-    where.not("products.amount" => 0)
+  scope :max2min, ->(field = :id) { reorder("#{ field } DESC") if field && self.columns.map(&:name).include?(field.to_s) }
+  scope :min2max, ->(field = :id) { reorder("#{ field } ASC")  if field && self.columns.map(&:name).include?(field.to_s) }
+
+  scope :in_stock, ->{ where.not("products.amount" => 0) }
+
+  scope :in_product_categories, ->(categories_ids = nil){
+    categories_ids = Array.wrap(categories_ids)
+    return nil if categories_ids.blank?
+
+    joins(:product_category_relations)
+    .where("product_category_relations.product_category_id" => categories_ids)
+  }
+
+  scope :without_product_categories, ->{
+    joins("LEFT OUTER JOIN
+      product_category_relations
+      ON
+      product_category_relations.product_id = products.id
+    ")
+    .group("products.id")
+    .having("product_category_relations.id" => nil)
   }
 
   # rails g model product_params1_set title:string
+  # rails g model product_params2_set title:string
+  # rails g model product_params3_set title:string
+  # rails g model product_params4_set title:string
   belongs_to :product_params_set, polymorphic: true
+
+  has_many :product_category_relations
+  has_many :product_categories, through: :product_category_relations
+
+  def self.main_filter params
+    params = params.with_indifferent_access
+
+    brands     = params[:brands]
+    price_min  = params[:price_min].to_f if params[:price_min]
+    price_max  = params[:price_max].to_f if params[:price_max]
+    categories = params[:categories]
+
+    # select all products ids in this categories (can be a huge array)
+
+    in_product_categories(categories)
+    .includes(:product_categories)
+    .with_brands_ids(brands)
+    .price_gteq(price_min).price_lteq(price_max)
+  end
 
   scope :custom_query, ->{
     q = <<-EOS.squish
@@ -43,9 +84,12 @@ class Product < ActiveRecord::Base
           "products"."product_params_set_id" = "product_params1_sets"."id"
 
       WHERE
-        "product_params1_sets"."processor_type" = 'A7'
-        OR
-        "product_params0_sets"."size_x" = '1'
+        "products"."product_params_set_type" IN ("ProductParams0Set")
+        AND
+        (
+          "product_params1_sets"."processor_type" = 'A7'
+          OR "product_params0_sets"."size_x" = '1'
+        )
       ;
     EOS
 
@@ -81,3 +125,5 @@ end
 # `Select with Custom Params:`
 #
 # => processor_type: "A7"
+
+# Product.in_stock.without_product_categories.page(1).per(3)

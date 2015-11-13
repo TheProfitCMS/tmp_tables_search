@@ -1,0 +1,18 @@
+.ma.w1000.clearfix.pt20
+  .table
+    .row
+      .cell.w200
+        .fs22.lh120.mb30 Product Categories
+
+        .mb20.clearfix
+          = link_to @product_category, class: 'ptz--btn' do
+            = @product_category.title
+
+        .mb20= link_to "Назад", root_path, class: 'ptz--btn'
+
+      .cell
+        = render partial: 'products/list',   locals: { products: @products }
+        = render partial: 'products/brands', locals: { brands: @brands }
+
+
+

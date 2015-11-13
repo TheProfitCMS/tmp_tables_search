@@ -58,11 +58,22 @@ end
   puts "Brand #{ i.next } created"
 end
 
-products = Product.all.to_a
-brands   = Brand.all.to_a
+20.times do |i|
+  ProductCategory.create!(
+    title: "Product Category #{ i.next }"
+  )
+
+  puts "Product Category #{ i.next } created"
+end
+
+products   = Product.all.to_a
+brands     = Brand.all.to_a
+categories = ProductCategory.all.to_a
 
 100.times do
   product = products.sample
+
+  # ADD BRANDS
   _times = [1,2,3].sample
 
   _times.times do
@@ -70,6 +81,22 @@ brands   = Brand.all.to_a
     rel   = product.products_brands_rels.new(brand: brand)
 
     rel_text = "Product #{ product.id }/Brand #{ brand.id }"
+
+    if rel.save
+      puts "#{ rel_text } -- relation created"
+    else
+      puts "#{ rel_text } -- relation duplication"
+    end
+  end # times
+
+  # ADD PRODUCT CATEGORY
+  _times = [1,2,3].sample
+
+  _times.times do
+    category = categories.sample
+    rel = product.product_category_relations.new(product_category: category)
+
+    rel_text = "Product #{ product.id }/ProductCategory #{ category.id }"
 
     if rel.save
       puts "#{ rel_text } -- relation created"

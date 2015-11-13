@@ -5,30 +5,18 @@ module RailsShop
     included do
       scope :with_products, ->{
         joins(:products_brands_rels)
-        .select('brands.*')
-        .group('brands.id')
+        .group("brands.id")
         .having("COUNT( products_brands_rels.product_id ) > 0")
       }
 
       scope :without_products, ->{
-        # find ids of brands without relations to products
-        q = <<-EOS.squish
-          SELECT
-            "brands".id
-          FROM
-            "brands"
-          LEFT OUTER JOIN
-            "products_brands_rels"
-            ON
-              "products_brands_rels"."brand_id" = "brands"."id"
-          GROUP BY
-            "brands".id
-          HAVING
-            "products_brands_rels".id IS NULL;
-        EOS
-
-        _ids = connection.select_value(q)
-        where(id: _ids)
+        joins("
+          LEFT OUTER JOIN products_brands_rels
+          ON
+            products_brands_rels.brand_id = brands.id
+        ")
+        .group("brands.id")
+        .having("products_brands_rels.id" => nil)
       }
 
       scope :with_products_count, ->(count = 0){
@@ -36,7 +24,7 @@ module RailsShop
 
         joins(:products_brands_rels)
         .group('brands.id')
-        .having("COUNT( products_brands_rels.product_id ) = #{ count }")
+        .having("COUNT( products_brands_rels.product_id ) = ?", count)
       }
     end
   end

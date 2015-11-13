@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151107144944) do
+ActiveRecord::Schema.define(version: 20151112160210) do
 
   create_table "brands", force: :cascade do |t|
     t.string   "title"
@@ -21,6 +21,22 @@ ActiveRecord::Schema.define(version: 20151107144944) do
     t.datetime "created_at",                   null: false
     t.datetime "updated_at",                   null: false
   end
+
+  create_table "product_categories", force: :cascade do |t|
+    t.string   "title"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "product_category_relations", force: :cascade do |t|
+    t.integer  "product_id"
+    t.integer  "product_category_id"
+    t.datetime "created_at",          null: false
+    t.datetime "updated_at",          null: false
+  end
+
+  add_index "product_category_relations", ["product_category_id"], name: "index_product_category_relations_on_product_category_id"
+  add_index "product_category_relations", ["product_id"], name: "index_product_category_relations_on_product_id"
 
   create_table "product_params0_sets", force: :cascade do |t|
     t.string   "title",       default: "USB Flash Drive params"

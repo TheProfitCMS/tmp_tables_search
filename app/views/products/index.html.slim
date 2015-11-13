@@ -1,0 +1,14 @@
+.ma.w1000.clearfix.pt20
+  .table
+    .row
+      .cell.w200
+        .fs22.lh120.mb30 Product Categories
+
+        - @product_categories.each do |pc|
+          .mb20.clearfix
+            = link_to pc, class: 'ptz--btn' do
+              = pc.title
+
+      .cell
+        = render partial: 'products/list', locals: { products: @products }
+        = render partial: 'products/brands', locals: { brands: @brands }
