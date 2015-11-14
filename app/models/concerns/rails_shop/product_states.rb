@@ -6,7 +6,9 @@ module RailsShop
 
     included do
       validates_inclusion_of :state, in: STATES
-      scope :with_state, ->(states){ where( state: Array.wrap(states) ) if states.present? }
+      scope :with_state, ->(states){
+        where( "#{ table_name }.state" => Array.wrap(states) ) if states.present?
+      }
 
       STATES.each do |state|
         scope state, ->{ with_state state }

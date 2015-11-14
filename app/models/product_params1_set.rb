@@ -6,25 +6,38 @@ class ProductParams1Set < ActiveRecord::Base
   PROCESSORS_TYPES = %w[ Atom A8 A7 A31s CoreM i7Core i5Core CoreDuo ]
   DISPLAY_SIZES    = [ 17, 19, 21, 22.5 ]
 
-  def self.filters
-    [
-      {
-        field: :processor_type,
-        value_type: :string,
-        visible: true,
+  class << self
+    def join_prefix
+      1
+    end
 
-        type: :select,
-        options: PROCESSORS_TYPES
-      },
-      {
-        field: :display_size,
-        value_type: :string,
-        visible: false,
+    def join_fields
+      _columns = column_names - ['id', 'title', 'created_at', 'updated_at']
+      _columns.map do |column|
+        "#{ table_name }.#{ column } AS pf#{ join_prefix }_#{ column }"
+      end.join(', ')
+    end
 
-        type: :select,
-        options: DISPLAY_SIZES
-      }
-    ]
+    def filters
+      [
+        {
+          type: :select,
+          options: PROCESSORS_TYPES,
+
+          field: :processor_type,
+          value_type: :string,
+          visible: true
+        },
+        {
+          type: :select,
+          options: DISPLAY_SIZES,
+
+          field: :display_size,
+          value_type: :string,
+          visible: false
+        }
+      ]
+    end
   end
 
   has_one :product, as: :product_params_set

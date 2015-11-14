@@ -1,10 +1,31 @@
 class Product < ActiveRecord::Base
-  has_many :products_brands_rels, dependent: :delete_all
-  has_many :brands, through: :products_brands_rels, source: :brand
-
-  include ::RailsShop::BrandStates
+  include ::RailsShop::ProductStates
   include ::RailsShop::ProductBrandsScopes
   include ::RailsShop::ProductPriceScopes
+
+  class << self
+    # Product
+
+    def get_tmp_info_by id
+    end
+
+    def set_tmp_info_by id
+    end
+
+    def delete_tmp_info_by id
+    end
+
+    # Products
+
+    def get_full_tmp_info
+    end
+
+    def set_tmp_info
+    end
+
+    def delete_tmp_info
+    end
+  end
 
   scope :max2min, ->(field = :id) { reorder("#{ field } DESC") if field && self.columns.map(&:name).include?(field.to_s) }
   scope :min2max, ->(field = :id) { reorder("#{ field } ASC")  if field && self.columns.map(&:name).include?(field.to_s) }
@@ -28,6 +49,10 @@ class Product < ActiveRecord::Base
     .group("products.id")
     .having("product_category_relations.id" => nil)
   }
+
+  def self.params_types
+    pluck('products.product_params_set_type').uniq
+  end
 
   # rails g model product_params1_set title:string
   # rails g model product_params2_set title:string
@@ -54,45 +79,43 @@ class Product < ActiveRecord::Base
     .price_gteq(price_min).price_lteq(price_max)
   end
 
-  scope :custom_query, ->{
+  def self.products_full_data_sql
+    params_joins = [0, 1].map do |id|
+      str = <<-EOS.squish
+        LEFT JOIN
+          "product_params#{ id }_sets"
+          ON
+            "products"."product_params_set_type" = "ProductParams#{ id }Set"
+            AND
+            "products"."product_params_set_id" = "product_params#{ id }_sets"."id"
+      EOS
+    end.join(' ')
+
+
     q = <<-EOS.squish
       SELECT
-        "products"."id",
-        "products"."product_params_set_type",
+        "products".*,
 
-        "product_params0_sets"."size_x",
-        "product_params0_sets"."size_y",
-        "product_params0_sets"."size_z",
+        #{ ProductsBrandsRel.join_fields },
+        #{ ProductCategoryRelation.join_fields },
 
-        "product_params1_sets"."processor_type"
+        #{ ProductParams0Set.join_fields },
+        #{ ProductParams1Set.join_fields }
 
       FROM
         "products"
 
-      LEFT OUTER JOIN
-        "product_params0_sets"
+      LEFT JOIN
+        "products_brands_rels"
         ON
-          "products"."product_params_set_type" = "ProductParams0Set"
-          AND
-          "products"."product_params_set_id" = "product_params0_sets"."id"
+          "products_brands_rels"."product_id" = "products"."id"
 
-      LEFT OUTER JOIN
-        "product_params1_sets"
-        ON
-          "products"."product_params_set_type" = "ProductParams1Set"
-          AND
-          "products"."product_params_set_id" = "product_params1_sets"."id"
-
-      WHERE
-        "products"."product_params_set_type" IN ("ProductParams0Set")
-        AND
-        (
-          "product_params1_sets"."processor_type" = 'A7'
-          OR "product_params0_sets"."size_x" = '1'
-        )
-      ;
+      #{ params_joins }
     EOS
+  end
 
+  scope :products_full_data, ->{
+    q = products_full_data_sql
     find_by_sql(q)
   }
 end

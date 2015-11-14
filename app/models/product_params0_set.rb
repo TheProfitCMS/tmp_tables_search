@@ -11,28 +11,41 @@
 class ProductParams0Set < ActiveRecord::Base
   INTERFACES = ['USB 2.0', 'USB 3.0']
 
-  def self.filters
-    [
-      {
-        name: :volume,
-        field: :volume,
-        value_type: :integer,
-        visible: true,
+  class << self
+    def join_prefix
+      0
+    end
 
-        type: :range,
-        mix: 128,
-        max: 8192
-      },
-      {
-        name: :interfaces,
-        field: [:interface_1, :interface_2],
-        value_type: :string,
-        visible: false,
+    def join_fields
+      _columns = column_names - ['id', 'title', 'created_at', 'updated_at']
+      _columns.map do |column|
+        "#{ table_name }.#{ column } AS pf#{ join_prefix }_#{ column }"
+      end.join(', ')
+    end
 
-        type: :select,
-        options: INTERFACES
-      }
-    ]
+    def filters
+      [
+        {
+          type: :integer_range,
+          mix: 128,
+          max: 8192,
+
+          name: :volume,
+          field: :volume,
+          value_type: :integer,
+          visible: true
+        },
+        {
+          type: :checkbox_list,
+          options: INTERFACES,
+
+          name: :interfaces,
+          field: [:interface_1, :interface_2],
+          value_type: :string,
+          visible: false
+        }
+      ]
+    end
   end
 
   has_one :product, as: :product_params_set
