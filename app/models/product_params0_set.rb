@@ -12,17 +12,6 @@ class ProductParams0Set < ActiveRecord::Base
   INTERFACES = ['USB 2.0', 'USB 3.0']
 
   class << self
-    def join_prefix
-      0
-    end
-
-    def join_fields
-      _columns = column_names - ['id', 'title', 'created_at', 'updated_at']
-      _columns.map do |column|
-        "#{ table_name }.#{ column } AS pf#{ join_prefix }_#{ column }"
-      end.join(', ')
-    end
-
     def filters
       [
         {

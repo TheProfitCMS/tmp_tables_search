@@ -1,5 +1,8 @@
 /*
   SQL SAMPLE 1
+
+  SQLITE: .read SQL-samples/1.sql
+  PSQL:      \i SQL-samples/1.sql
 */
 SELECT
   "products"."id",

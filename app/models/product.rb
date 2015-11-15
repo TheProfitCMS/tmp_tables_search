@@ -3,30 +3,6 @@ class Product < ActiveRecord::Base
   include ::RailsShop::ProductBrandsScopes
   include ::RailsShop::ProductPriceScopes
 
-  class << self
-    # Product
-
-    def get_tmp_info_by id
-    end
-
-    def set_tmp_info_by id
-    end
-
-    def delete_tmp_info_by id
-    end
-
-    # Products
-
-    def get_full_tmp_info
-    end
-
-    def set_tmp_info
-    end
-
-    def delete_tmp_info
-    end
-  end
-
   scope :max2min, ->(field = :id) { reorder("#{ field } DESC") if field && self.columns.map(&:name).include?(field.to_s) }
   scope :min2max, ->(field = :id) { reorder("#{ field } ASC")  if field && self.columns.map(&:name).include?(field.to_s) }
 
@@ -105,7 +81,7 @@ class Product < ActiveRecord::Base
       FROM
         "products"
 
-      LEFT JOIN
+      LEFT OUTER JOIN
         "products_brands_rels"
         ON
           "products_brands_rels"."product_id" = "products"."id"

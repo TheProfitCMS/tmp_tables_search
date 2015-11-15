@@ -7,17 +7,6 @@ class ProductParams1Set < ActiveRecord::Base
   DISPLAY_SIZES    = [ 17, 19, 21, 22.5 ]
 
   class << self
-    def join_prefix
-      1
-    end
-
-    def join_fields
-      _columns = column_names - ['id', 'title', 'created_at', 'updated_at']
-      _columns.map do |column|
-        "#{ table_name }.#{ column } AS pf#{ join_prefix }_#{ column }"
-      end.join(', ')
-    end
-
     def filters
       [
         {
